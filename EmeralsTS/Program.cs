@@ -39,30 +39,36 @@ class Program
 
     static void AddToHostsFile()
     {
-        bool error = false;
         string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "System32", "drivers", "etc", "hosts");
 
-        if (File.Exists(path))
+        try
         {
-            if (doesFixAlreadyExist(path))
-            {
-                Console.WriteLine("Fix already exists, nothing to do.");
-                return;
-            }
-
             string lineToAdd = "127.0.0.1 lh.v10.network";
+            if (File.Exists(path))
+            {
+                if (doesFixAlreadyExist(path))
+                {
+                    Console.WriteLine("Fix already exists, nothing to do.");
+                    return;
+                }
 
-            File.AppendAllText(path, Environment.NewLine + lineToAdd);
-            Console.WriteLine("Completed DNS Fix.");
-        }
-        else
-        {
-            error = true;
-        }
+                File.AppendAllText(path, Environment.NewLine + lineToAdd);
+                Console.WriteLine("Completed DNS Fix.");
+            }
+            else
+            {
+                if (!Directory.Exists(Path.GetDirectoryName(path)))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+                }
 
-        if (error)
+                File.Create(path).Dispose();
+                File.AppendAllText(path, lineToAdd);
+            }
+        }
+        catch (Exception ex)
         {
-            Console.WriteLine("An error occurred while trying to fix the DNS issue.");
+            Console.WriteLine("Error while trying to fix the DNS!");
         }
     }
 
